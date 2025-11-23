@@ -28,7 +28,7 @@ Before running the installer, ensure you have:
 
 ### Installation
 
-1.  Download **`Farming Experience Server Installer`** from the [releases](#) page.
+1.  Download **`Farming Experience Server Installer`** from the [releases](https://github.com/axperty/farmingexperienceserverinstaller/releases/tag/release) page.
 2.  Place it in an empty folder (recommended) or anywhere you want, the installer will later create a separate folder for the server contents.
 3.  Run the **`Farming Experience Server Installer`** executable.
 4.  The app will try to detect your modpack folder. If it fails, click **Browse** to select your `Farming Experience` instance folder.
