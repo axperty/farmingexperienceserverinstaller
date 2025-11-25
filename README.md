@@ -11,14 +11,14 @@
 A plug-and-play installer for creating a server for the Farming Experience modpack so you can play with your friends.
 
 ### Features
-- Automatically finds your local CurseForge installation of the Farming Experience modpack to copy the necessary files.
+- Automatically finds your local CurseForge or Modrinth installation of the Farming Experience modpack to copy the necessary files.
 - Downloads the specific NeoForge loader and installs it silently.
 
 ### Prerequisites
-Before running the installer, ensure you have:
+Before running the installer, make sure you have:
 
 - **Java 21 Installed:** Required to run the NeoForge installer and server. [Download Java 21](https://adoptium.net/).
-- **Farming Experience:** You must have the **Farming Experience** modpack installed via the CurseForge App.
+- **Farming Experience:** You must have **Farming Experience** installed via the CurseForge App or Modrinth App.
 - **Port Forwarding:** For your friends to connect to your server, your internet router must allow the connection. If you have already opened port `25565`, the server will work immediately, otherwise you will need to log into your router and port forward port `25565` (TCP/UDP) to your computer.
 
 ### Installation
@@ -33,8 +33,10 @@ Before running the installer, ensure you have:
 If you want to modify the code or compile it yourself, follow these steps.
 
 **Requirements:**
-- Python 3.10+
-- pip package manager
+```
+Python 3.10+
+pip package manager
+```
 
 **Install Dependencies:**
 ```bash
