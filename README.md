@@ -50,7 +50,7 @@ Ensure you have the icon file **`app.ico`** in the same directory as the script.
 Run this command in your terminal to build the standalone executable with the icon embedded:
 
 ```powershell
-python -m PyInstaller --noconsole --onefile --icon="app.ico" --add-data "app.ico;." --name="Farming Experience Server Installer" installer_gui.py
+python -m PyInstaller --noconsole --onefile --icon="app.ico" --add-data "app.ico;." --name="farmingexperience-server-installer_YY.MM.DD" main.py
 ```
 
 The output file will be located in the `dist/` folder.
