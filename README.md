@@ -14,7 +14,7 @@ A plug-and-play installer for creating a server for the Farming Experience modpa
 - Automatically finds your local CurseForge or Modrinth installation of the Farming Experience modpack to copy the necessary files.
 - Downloads the specific NeoForge loader and installs it silently.
 
-![Farming Experience Server Installer](https://github.com/user-attachments/assets/b2c44402-5e3e-424e-b1a3-d1a6730d5ac1)
+![Farming Experience Server Installer](https://github.com/user-attachments/assets/6b9d19c6-0d44-4d0f-b7ff-0c8393efd280)
 
 ### Prerequisites
 Before running the installer, make sure you have:
