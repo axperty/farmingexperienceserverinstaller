@@ -1,5 +1,5 @@
 # --- VERSION CONFIGURATION ---
-NEOFORGE_VERSION = "21.1.209"
+NEOFORGE_VERSION = "21.1.219"
 NEOFORGE_INSTALLER_URL = f"https://maven.neoforged.net/releases/net/neoforged/neoforge/{NEOFORGE_VERSION}/neoforge-{NEOFORGE_VERSION}-installer.jar"
 
 # --- ASSETS & LINKS ---
