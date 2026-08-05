@@ -14,12 +14,15 @@ HEADERS = {
 }
 
 # --- FILE COPY SETTINGS ---
-# Mods that cause server crashes or are client-side only
 EXCLUDED_MODS = [
-    "fast-ip-ping*", 
-    "entity_model_features*", 
-    "entity_texture_features*", 
-    "lambdynamiclights*"
+    "fast-ip-ping*",
+    "entity_model_features*",
+    "entity_texture_features*",
+    "lambdynamiclights*",
+    "sodium*",
+    "holdmyitemsnf*",
+    "fog*",
+    "raised*"
 ]
 
 EXCLUDED_FOLDERS = [

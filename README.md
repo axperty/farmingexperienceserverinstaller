@@ -19,9 +19,9 @@ A plug-and-play installer for creating a server for the Farming Experience modpa
 ### Prerequisites
 Before running the installer, make sure you have:
 
+- **Port Forwarding:** For your friends to connect to your server, your internet router must allow the connection. If you have already opened port `25565`, the server will work immediately, otherwise you will need to log into your router and port forward port `25565` (TCP/UDP) to your computer.
 - **Java 21 Installed:** Required to run the NeoForge installer and server. [Download Java 21](https://adoptium.net/).
 - **Farming Experience:** You must have **Farming Experience** installed via the CurseForge App or Modrinth App.
-- **Port Forwarding:** For your friends to connect to your server, your internet router must allow the connection. If you have already opened port `25565`, the server will work immediately, otherwise you will need to log into your router and port forward port `25565` (TCP/UDP) to your computer.
 
 ### Installation
 1.  Download **`Farming Experience Server Installer`** from the [releases](https://github.com/axperty/farmingexperienceserverinstaller/releases/tag/release) page.

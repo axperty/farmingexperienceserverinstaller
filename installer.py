@@ -16,24 +16,24 @@ def run_installation(src_path, dst_path, create_shortcut_flag, update_status, lo
     Main orchestration function running in a separate thread.
     """
     try:
-        # 1. Prepare Destination
+        # Prepare Destination
         if not os.path.exists(dst_path):
             os.makedirs(dst_path)
 
-        # 2. Copy Mods
+        # Copy Mods
         update_status("Copying Mods...", 0)
         src_mods = os.path.join(src_path, "mods")
         dst_mods = os.path.join(dst_path, "mods")
-        
+
         if os.path.exists(dst_mods):
             shutil.rmtree(dst_mods)
         os.makedirs(dst_mods)
 
         all_files = os.listdir(src_mods)
         total_files = len(all_files)
-        
+
         log_func(f"--- STARTING MOD COPY ({total_files} items) ---")
-        
+
         for i, item in enumerate(all_files):
             full_src = os.path.join(src_mods, item)
             full_dst = os.path.join(dst_mods, item)
@@ -51,14 +51,14 @@ def run_installation(src_path, dst_path, create_shortcut_flag, update_status, lo
                     if fnmatch.fnmatch(item.lower(), pattern.lower()):
                         is_excluded = True
                         break
-                
+
                 if is_excluded:
                     log_func(f"[SKIP] File excluded: {item}")
                     continue
-                
+
                 log_func(f"[COPY] File: {item}")
                 shutil.copy2(full_src, full_dst)
-            
+
             # Update Progress Bar (0% to 40%)
             pct = (i / total_files) * 40
             if i % 5 == 0:
@@ -66,18 +66,18 @@ def run_installation(src_path, dst_path, create_shortcut_flag, update_status, lo
 
         log_func("--- MOD COPY FINISHED ---")
 
-        # 3. Copy Configs
+        # Copy Configs
         update_status("Copying Configs...", 40)
         src_cfg = os.path.join(src_path, "config")
         dst_cfg = os.path.join(dst_path, "config")
-        
+
         if os.path.exists(src_cfg):
             if os.path.exists(dst_cfg):
                 shutil.rmtree(dst_cfg)
             shutil.copytree(src_cfg, dst_cfg)
             log_func("Configs copied.")
 
-        # 4. Download & Convert Icon
+        # Download & Convert Icon
         update_status("Downloading Server Icon...", 50)
         png_path = os.path.join(dst_path, "server-icon.png")
         ico_path = os.path.join(dst_path, "server-icon.ico")
@@ -87,7 +87,7 @@ def run_installation(src_path, dst_path, create_shortcut_flag, update_status, lo
         except Exception as e:
             log_func(f"Icon processing failed: {e}", error=True)
 
-        # 5. Generate server.properties
+        # Generate server.properties
         update_status("Configuring Server...", 55)
         props_file = os.path.join(dst_path, "server.properties")
         with open(props_file, "w") as f:
@@ -96,22 +96,22 @@ def run_installation(src_path, dst_path, create_shortcut_flag, update_status, lo
                 f.write(f"{k}={v}\n")
         log_func("server.properties generated.")
 
-        # 6. Download NeoForge Installer
+        # Download NeoForge Installer
         update_status("Downloading NeoForge...", 60)
         installer_jar = os.path.join(dst_path, "installer.jar")
         download_file(config.NEOFORGE_INSTALLER_URL, installer_jar, log_func)
 
-        # 7. Install Server Loader (The heavy part)
+        # Install Server Loader
         update_status("Installing Server Loader...", 75, sub_text="(This might take a few minutes...)")
         log_func("Running NeoForge installer...")
-        
+
         # Determine creation flags to hide console window on Windows
         creation_flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-        
+
         subprocess.run(
-            ["java", "-jar", "installer.jar", "--installServer"], 
-            cwd=dst_path, 
-            check=True, 
+            ["java", "-jar", "installer.jar", "--installServer"],
+            cwd=dst_path,
+            check=True,
             creationflags=creation_flags
         )
 
@@ -121,40 +121,40 @@ def run_installation(src_path, dst_path, create_shortcut_flag, update_status, lo
         if os.path.exists(os.path.join(dst_path, "installer.jar.log")):
             os.remove(os.path.join(dst_path, "installer.jar.log"))
 
-        # 8. Patch run.bat for --nogui
+        # Patch run.bat for --nogui
         run_bat_path = os.path.join(dst_path, "run.bat")
         if os.path.exists(run_bat_path):
             try:
                 with open(run_bat_path, "r") as f:
                     content = f.read()
-                
+
                 # Check if we need to patch
                 if "%*" in content:
                     content = content.replace("%*", "--nogui %*")
                 else:
                     content += " --nogui"
-                
+
                 with open(run_bat_path, "w") as f:
                     f.write(content)
                 log_func("run.bat patched for nogui.")
             except Exception as e:
                 log_func(f"Failed to patch run.bat: {e}", error=True)
 
-        # 9. Agree to EULA
+        # Agree to EULA
         with open(os.path.join(dst_path, "eula.txt"), "w") as f:
             f.write("eula=true\n")
 
-        # 10. Create Shortcut
+        # Create Shortcut
         if create_shortcut_flag:
             update_status("Creating Shortcut...", 90, sub_text="")
             create_shortcut(os.path.join(dst_path, "run.bat"), ico_path, log_func)
 
-        # 11. Fetch IPs
+        # Fetch IPs
         update_status("Fetching IP...", 95)
         public_ip = utils.get_public_ip(log_func)
         local_ip = utils.get_local_ip(log_func)
 
-        # 12. Complete
+        # Complete
         update_status("Complete!", 100)
         on_success(public_ip, local_ip)
 
