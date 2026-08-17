@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 import subprocess
 import re
 import socket
@@ -8,13 +9,10 @@ from datetime import datetime
 import tkinter.messagebox as messagebox
 import webbrowser
 
-# Local imports
 import config
 
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
@@ -22,7 +20,6 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 def center_window(root, w, h):
-    """ Centers the Tkinter window on the screen. """
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     x = (screen_width - w) // 2
@@ -30,36 +27,32 @@ def center_window(root, w, h):
     root.geometry(f"{w}x{h}+{x}+{y}")
 
 def log_message(buffer, message, error=False):
-    """ Appends a timestamped message to the log buffer. """
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     tag = "[ERROR]" if error else "[INFO]"
     buffer.append(f"{timestamp} {tag} {message}")
 
-def flush_logs(dst_folder, buffer):
-    """ Writes the log buffer to a file. """
+def flush_logs(dst_folder, buffer, prefix="installer"):
     try:
-        if not os.path.exists(dst_folder):
-            os.makedirs(dst_folder)
-        with open(os.path.join(dst_folder, "installer.log"), "w", encoding="utf-8") as f:
+        logs_folder = os.path.join(dst_folder, "logs")
+        os.makedirs(logs_folder, exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_path = os.path.join(logs_folder, f"{prefix}_{timestamp}.log")
+
+        with open(log_path, "w", encoding="utf-8") as f:
             f.write("\n".join(buffer))
     except Exception:
         pass
 
 def detect_instances():
-    """ 
-    Searches standard Modrinth and CurseForge directories for the instance.
-    Returns: (found_cf_path, found_mr_path). Elements are None if not found. 
-    """
     user_home = os.path.expanduser("~")
     appdata = os.getenv("APPDATA")
     
-    # Potential CurseForge Paths
     cf_candidates = [
         os.path.join(appdata, "CurseForge", "Minecraft", "Instances", "Farming Experience"),
         os.path.join(user_home, "curseforge", "minecraft", "Instances", "Farming Experience"),
     ]
     
-    # Potential Modrinth Paths
     mr_candidates = [
         os.path.join(appdata, "ModrinthApp", "profiles", "Farming Experience")
     ]
@@ -79,24 +72,16 @@ def detect_instances():
     return found_cf, found_mr
 
 def check_java(log_func):
-    """ 
-    Checks for Java 21. Returns True if valid, False otherwise. 
-    If invalid, prompts the user to download it.
-    """
     try:
-        # Create flag to hide console on Windows
-        creation_flags = subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
-        
         result = subprocess.run(
-            ["java", "-version"], 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.STDOUT, 
-            text=True, 
-            creationflags=creation_flags
+            ["java", "-version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
         )
         output = result.stdout
         
-        # Look for version "21.x.x"
         match = re.search(r'version "(\d+)', output)
         if match:
             major_version = int(match.group(1))
@@ -112,7 +97,6 @@ def check_java(log_func):
     except Exception as e:
         log_func(f"Java check error: {e}")
 
-    # If we get here, Java is missing or wrong version
     ans = messagebox.askyesno(
         "Java 21 Required", 
         "Java 21 is required to run this server but was not found (or is outdated).\n\nWould you like to download it now?",
@@ -123,8 +107,7 @@ def check_java(log_func):
     return False
 
 def get_public_ip(log_func):
-    """ Fetches public IP from api.ipify.org """
-    try: 
+    try:
         ip = requests.get('https://api.ipify.org', headers=config.HEADERS, timeout=5).text
         log_func(f"Public IP detected: {ip}")
         return ip
@@ -133,10 +116,8 @@ def get_public_ip(log_func):
         return "Unknown"
 
 def get_local_ip(log_func):
-    """ Fetches local LAN IP by connecting to a DNS server. """
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        # Connect to a public DNS server (doesn't send data)
         s.connect(("8.8.8.8", 80))
         ip = s.getsockname()[0]
         s.close()

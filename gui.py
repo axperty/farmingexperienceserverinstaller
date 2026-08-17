@@ -4,8 +4,6 @@ import os
 import threading
 import webbrowser
 import subprocess
-
-# Local imports
 import config
 import utils
 import installer
@@ -15,26 +13,25 @@ class ServerInstallerApp:
         self.root = root
         self.root.title("Farming Experience Server Installer")
         
-        # --- SET WINDOW ICON ---
         try:
             self.root.iconbitmap(utils.resource_path("app.ico"))
-        except:
+        except Exception:
             pass
         
-        # Window Dimensions & Centering
         w, h = 500, 420
         utils.center_window(root, w, h)
         self.root.resizable(False, False)
         
         self.log_buffer = []
-        self.log("Installer initialized.")
+        self.log("Installer started.")
 
         style = ttk.Style()
-        try: style.theme_use('vista')
-        except: style.theme_use('clam')
+        try: 
+            style.theme_use('vista')
+        except Exception: 
+            style.theme_use('clam')
         style.configure("TProgressbar", thickness=15)
 
-        # Header (Always visible)
         header_frame = tk.Frame(root, bg="#2E7D32")
         header_frame.pack(fill="x", side="top")
         
@@ -44,24 +41,18 @@ class ServerInstallerApp:
         lbl_subtitle = tk.Label(header_frame, text="Server Installer", font=("Segoe UI", 10), bg="#2E7D32", fg="#E8F5E9")
         lbl_subtitle.pack(pady=(0, 15))
 
-        # Main Content Container
         self.content_area = tk.Frame(root)
         self.content_area.pack(fill="both", expand=True)
 
-        # 1. Detect Instances using utils
         cf_path, mr_path = utils.detect_instances()
 
-        # 2. Decide Initial Screen
         if cf_path and mr_path:
-            # Conflict: Show in-app selection screen
             self.show_platform_selection(cf_path, mr_path)
         else:
-            # No conflict: Go straight to inputs
             initial_path = cf_path or mr_path or ""
             self.show_input_screen(initial_path)
 
     def log(self, message, error=False):
-        # Buffer logs for saving later
         utils.log_message(self.log_buffer, message, error)
 
     def show_platform_selection(self, cf_path, mr_path):
@@ -75,15 +66,11 @@ class ServerInstallerApp:
         btn_container = tk.Frame(self.frame_selection)
         btn_container.pack(fill="x", padx=50)
 
-        # Modrinth Button
         tk.Button(btn_container, text="Use Modrinth Installation", bg="#1BD96A", fg="white", 
-                  font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2", pady=8,
-                  command=lambda: self.transition_to_input(mr_path)).pack(fill="x", pady=5)
+                  **config.SECONDARY_BTN_STYLE, command=lambda: self.transition_to_input(mr_path)).pack(fill="x", pady=5)
         
-        # CurseForge Button
         tk.Button(btn_container, text="Use CurseForge Installation", bg="#F57C00", fg="white", 
-                  font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2", pady=8,
-                  command=lambda: self.transition_to_input(cf_path)).pack(fill="x", pady=5)
+                  **config.SECONDARY_BTN_STYLE, command=lambda: self.transition_to_input(cf_path)).pack(fill="x", pady=5)
 
     def transition_to_input(self, selected_path):
         """Remove selection screen and show input screen."""
@@ -107,7 +94,6 @@ class ServerInstallerApp:
         self.btn_src = ttk.Button(frame_src, text="Browse", width=8, command=self.browse_src)
         self.btn_src.pack(side="right")
 
-        # Validation Label
         self.lbl_src_validation = tk.Label(self.frame_inputs, text="", font=("Segoe UI", 8))
         self.lbl_src_validation.pack(anchor="w", pady=(0, 10))
 
@@ -140,12 +126,9 @@ class ServerInstallerApp:
         link.pack(side="left")
         link.bind("<Button-1>", lambda e: webbrowser.open(config.EULA_URL))
 
-        self.btn_install = tk.Button(bottom_frame, text="CREATE SERVER", bg="#4CAF50", fg="white", 
-                                     font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2",
-                                     padx=15, pady=5, command=self.start_installation)
+        self.btn_install = tk.Button(bottom_frame, text="CREATE SERVER", **config.CREATE_SERVER_BTN_STYLE, command=self.start_installation)
         self.btn_install.pack(side="right")
         
-        # Trigger initial validation
         self.validate_src()
 
     def validate_src(self, *args):
@@ -163,12 +146,14 @@ class ServerInstallerApp:
             return False
 
     def browse_src(self):
-        f = filedialog.askdirectory(title="Select Farming Experience Instance")
-        if f: self.src_var.set(f)
+        folder = filedialog.askdirectory(title="Select Farming Experience Instance")
+        if folder:
+            self.src_var.set(folder)
 
     def browse_dst(self):
-        f = filedialog.askdirectory(title="Select Install Location")
-        if f: self.dst_var.set(f)
+        folder = filedialog.askdirectory(title="Select Install Location")
+        if folder:
+            self.dst_var.set(folder)
 
     def update_status(self, text, percent=None, sub_text=""):
         self.lbl_status.config(text=text)
@@ -182,13 +167,11 @@ class ServerInstallerApp:
             messagebox.showerror("Error", "Please select a valid Farming Experience instance folder containing a 'mods' directory.")
             return
         
-        # Check Java using utils
         if not utils.check_java(self.log):
             return
 
         self.frame_inputs.pack_forget()
         
-        # --- Progress Screen ---
         self.frame_progress = tk.Frame(self.content_area, padx=40)
         self.frame_progress.pack(fill="both", expand=True)
         
@@ -205,7 +188,6 @@ class ServerInstallerApp:
         self.progress_bar = ttk.Progressbar(self.progress_container, variable=self.progress_var, maximum=100)
         self.progress_bar.pack(fill="x")
         
-        # Start Thread
         threading.Thread(
             target=installer.run_installation,
             args=(
@@ -221,18 +203,17 @@ class ServerInstallerApp:
         ).start()
 
     def on_install_success(self, public_ip, local_ip):
-        # Schedule GUI updates on the main thread
         self.root.after(0, lambda: self._show_success_ui_main_thread(public_ip, local_ip))
-        utils.flush_logs(self.dst_var.get(), self.log_buffer)
+        utils.flush_logs(os.path.join(self.dst_var.get(), "serverinstaller"), self.log_buffer)
 
     def on_install_failure(self, error_message):
         self.root.after(0, lambda: self._show_failure_ui_main_thread(error_message))
-        utils.flush_logs(self.dst_var.get(), self.log_buffer)
+        utils.flush_logs(os.path.join(self.dst_var.get(), "serverinstaller"), self.log_buffer)
 
     def _show_failure_ui_main_thread(self, error_message):
         self.frame_progress.pack_forget()
         self.show_input_screen(self.src_var.get())
-        messagebox.showerror("Error", f"Installation Failed.\nCheck the installer.log file for more details.\n\n{error_message}")
+        messagebox.showerror("Error", f"Installation Failed.\nCheck the logs folder for more details.\n\n{error_message}")
 
     def _show_success_ui_main_thread(self, public_ip, local_ip):
         self.frame_progress.pack_forget()
@@ -250,8 +231,7 @@ class ServerInstallerApp:
             "bg": "#F5F5F5", "fg": "#333", "readonlybackground": "#F5F5F5", "highlightthickness": 0
         }
 
-        # Public IP
-        tk.Label(self.ip_container, text="Public IP (For friends online):", font=("Segoe UI", 10)).pack(anchor="w")
+        tk.Label(self.ip_container, text="Public IP (for your friends outside your network):", font=("Segoe UI", 10)).pack(anchor="w")
         pub_frame = tk.Frame(self.ip_container, pady=5)
         pub_frame.pack(fill="x", pady=(0, 15))
         
@@ -261,8 +241,7 @@ class ServerInstallerApp:
         self.public_ip_entry.config(state="readonly")
         ttk.Button(pub_frame, text="Copy", width=8, command=lambda: self.copy_to_clipboard(self.public_ip_entry.get())).pack(side="right", fill="y")
 
-        # Local IP
-        tk.Label(self.ip_container, text="Local IP (For same WiFi/LAN):", font=("Segoe UI", 10)).pack(anchor="w")
+        tk.Label(self.ip_container, text="Local IP (for your friends in the same network as you):", font=("Segoe UI", 10)).pack(anchor="w")
         loc_frame = tk.Frame(self.ip_container, pady=5)
         loc_frame.pack(fill="x")
         
@@ -275,10 +254,7 @@ class ServerInstallerApp:
         self.btn_finish_frame = tk.Frame(self.frame_success)
         self.btn_finish_frame.pack(pady=25, fill="x")
 
-        # Donate Button
-        btn_donate = tk.Button(self.btn_finish_frame, text="DONATE", bg="#4CAF50", fg="white", 
-                               font=("Segoe UI", 10, "bold"), relief="flat", cursor="hand2",
-                               padx=15, pady=5, command=self.open_donate)
+        btn_donate = tk.Button(self.btn_finish_frame, text="DONATE", **config.PRIMARY_BTN_STYLE, command=self.open_donate)
         btn_donate.pack(anchor="center")
 
         if self.autorun_var.get():
@@ -292,9 +268,10 @@ class ServerInstallerApp:
     def run_server_now(self):
         bat = os.path.join(self.dst_var.get(), "run.bat")
         if os.path.exists(bat):
-            subprocess.Popen([bat], cwd=self.dst_var.get(), creationflags=subprocess.CREATE_NEW_CONSOLE)
+            subprocess.Popen([bat], cwd=self.dst_var.get(), creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0)
         else:
             messagebox.showerror("Error", "run.bat not found.")
             
     def open_donate(self):
         webbrowser.open(config.DONATE_URL)
+
