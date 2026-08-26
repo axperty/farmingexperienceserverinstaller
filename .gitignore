@@ -1,14 +1,6 @@
-__pycache__/
-*.py[cod]
-*$py.class
-
-venv/
-env/
-.env
-
-build/
-dist/
-*.spec
+target/
+out/
+*.class
 
 *.log
 installer.log

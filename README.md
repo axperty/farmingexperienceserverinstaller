@@ -36,23 +36,26 @@ If you want to modify the code or compile it yourself, follow these steps.
 
 **Requirements:**
 ```
-Python 3.10+
-pip package manager
+JDK 21+
+Maven 3.9+
 ```
-
-**Install Dependencies:**
-```bash
-pip install requests pyinstaller
-```
-
-**App Icon (Optional):**
-Ensure you have the icon file **`app.ico`** in the same directory as the script. The script handles PNG to ICO conversion for the shortcut, but the EXE file icon requires a pre-made .ico file for compilation.
 
 **Compile:**
-Run this command in your terminal to build the standalone executable with the icon embedded:
+Run this command in the project root to build a standalone runnable jar (all classes + manifest bundled, no external dependencies):
 
 ```powershell
-python -m PyInstaller --noconsole --onefile --icon="app.ico" --add-data "app.ico;." --name="farmingexperience-server-installer_YY.MM.DD" main.py
+mvn package
 ```
 
-The output file will be located in the `dist/` folder.
+The output file will be located at `target/farmingexperience-server-installer.jar`. Run it with:
+
+```powershell
+java -jar target/farmingexperience-server-installer.jar
+```
+
+**Optional: native Windows executable**
+Use [`jpackage`](https://docs.oracle.com/en/java/javase/21/jpackage/) (bundled with the JDK) to wrap the jar into a `.exe` with the icon embedded:
+
+```powershell
+jpackage --input target --name "Farming Experience Server Installer" --main-jar farmingexperience-server-installer.jar --main-class com.farmingexperience.installer.Main --type exe --icon app.ico
+```
