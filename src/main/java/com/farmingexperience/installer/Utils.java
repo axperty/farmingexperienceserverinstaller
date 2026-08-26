@@ -56,6 +56,7 @@ public final class Utils {
     }
 
     // Downloads icon from this GitHub repo
+    // not called anywhere right now, disabled because it was making the app launch slow
     public static Image loadAppIcon() {
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -67,6 +68,19 @@ public final class Utils {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // not called anywhere right now, disabled because it was making the app launch slow
+    // now that i think this might be a terrible idea
+    public static void loadAppIconAsync(Window window) {
+        Thread thread = new Thread(() -> {
+            Image icon = loadAppIcon();
+            if (icon != null) {
+                SwingUtilities.invokeLater(() -> window.setIconImage(icon));
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public static void centerWindow(Window window, int w, int h) {

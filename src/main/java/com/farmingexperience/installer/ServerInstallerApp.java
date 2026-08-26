@@ -31,10 +31,8 @@ public class ServerInstallerApp {
         this.frame = frame;
         frame.setTitle(Config.APP_NAME + " Server Installer");
 
-        Image icon = Utils.loadAppIcon();
-        if (icon != null) {
-            frame.setIconImage(icon);
-        }
+        // Icon download disabled for now, was making the app not launch
+        // Utils.loadAppIconAsync(frame);
 
         int w = 640, h = 520;
         frame.setLayout(new BorderLayout());

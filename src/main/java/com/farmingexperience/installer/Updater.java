@@ -122,10 +122,9 @@ public final class Updater {
             this.dstPath = dstPath;
 
             frame.setTitle("Update Server - " + Config.APP_NAME + " Server Installer");
-            Image icon = Utils.loadAppIcon();
-            if (icon != null) {
-                frame.setIconImage(icon);
-            }
+
+            // Icon download disabled for now, was making the app not launch
+            // Utils.loadAppIconAsync(frame);
 
             int w = 460, h = 340;
             Utils.centerWindow(frame, w, h);
